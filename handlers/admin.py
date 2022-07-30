@@ -82,7 +82,7 @@ async  def load_price(message: types.Message, state: FSMContext):
 
 @dp.callback_query_handler(lambda x: x.data and x.data.startswith('del '))
 async def del_callback_run(callback_query: types.CallbackQuery):
-    await sqlite_db.sql_add_command(callback_query.data.replace('del ', ''))
+    await sqlite_db.sql_delete_command(callback_query.data.replace('del ', ''))
     await callback_query.answer(text=f'{callback_query.data.replace("del ", "")} удалена.')#, show_alert=True)
 
 @dp.message_handler(commands='Удалить')
