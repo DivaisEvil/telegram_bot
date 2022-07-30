@@ -5,6 +5,7 @@ from create_bot import dp, bot
 from aiogram.dispatcher.filters import Text
 from data_base import sqlite_db
 from keyboards import admin_kb
+from  aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 ID = None
 
@@ -79,6 +80,19 @@ async  def load_price(message: types.Message, state: FSMContext):
         await sqlite_db.sql_add_command(state)
         await state.finish()
 
+@dp.callback_query_handler(lambda x: x.data and x.data.startswith('del '))
+async def del_callback_run(callback_query: types.CallbackQuery):
+    await sqlite_db.sql_add_command(callback_query.data.replace('del ', ''))
+    await callback_query.answer(text=f'{callback_query.data.replace("del ", "")} удалена.')#, show_alert=True)
+
+@dp.message_handler(commands='Удалить')
+async def delet_item(message: types.Message):
+    if message.from_user.id ==ID:
+        read = await  sqlite_db.sql_read2()
+        for ret in read:
+            await bot.send_photo(message.from_user.id, ret[0], f'{ret[1]} Описание: {ret[2]} Цена {ret[-1]}')
+            await bot.send_message(message.from_user.id, text = '^^^', reply_markup=InlineKeyboardMarkup().\
+                                   add(InlineKeyboardButton(f'Удалить {ret[1]}', callback_data=f'del {ret[1]}')))
 # Регестрируеи хендлеры
 def register_handlers_admin(dp : Dispatcher):
     dp.register_message_handler(cm_start, commands=['Загрузить'], state=None)
